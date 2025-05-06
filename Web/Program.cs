@@ -1,3 +1,4 @@
+using Delta;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Web.Contexts;
@@ -13,6 +14,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<WebDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -28,5 +30,4 @@ app.UseHttpsRedirection();
 
 app.AddAnimalEndpoints();
 app.AddDictionarySettingsEndpoints();
-
 app.Run();

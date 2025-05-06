@@ -6,37 +6,38 @@ namespace Web.Domain;
 
 public class DictionarySettingsEntity : BaseEntity
 {
+    public DictionarySettingsEntity() { }
     public DictionarySettingsEntity(
+        Guid id,
         Guid dictionaryId,
         string code,
         string description,
-        DateTime startDate,
+        DateTime startDate, 
         DateTime endDate,
-        List<string> availableProperties,
+        List<Guid> availableDictionaries,
         List<PermissionEntity> permissions)
     {
+        Id = id;
         DictionaryId = dictionaryId;
         Code = code;
         Description = description;
         StartDate = startDate;
         EndDate = endDate;
-        AvailableProperties = availableProperties;
+        AvailableDictionaries = availableDictionaries;
         Permissions = permissions;
     }
-
-    [Key]
     public Guid DictionaryId { get; set; }
 
     [ForeignKey(nameof(DictionaryId))]
-    public required DictionaryEntity Dictionary { get; set; }
+    public DictionaryEntity Dictionary { get; set; }
 
-    public List<PermissionEntity> Permissions { get; set; } = [];
+    public List<PermissionEntity> Permissions { get; set; }
 
     [MaxLength(50)]
-    public string Code { get; set; } = string.Empty;
+    public string Code { get; set; }
 
     [MaxLength(100)]
-    public string Description { get; set; } = string.Empty;
+    public string Description { get; set; }
 
     public DateTime StartDate { get; set; }
 
@@ -44,5 +45,7 @@ public class DictionarySettingsEntity : BaseEntity
 
     //TODO AvailableProperties is array Guid ForeignKeys to dictionary 
     // rename to AvailableDictionary
-    public List<string> AvailableProperties { get; set; } = new(); // jsonb
+    public List<Guid> AvailableDictionaries { get; set; }
+    // [Timestamp]
+    // public byte[] Version { get; set; }
 }

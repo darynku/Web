@@ -13,7 +13,7 @@ using Web.Contexts;
 namespace Web.Migrations
 {
     [DbContext(typeof(WebDbContext))]
-    [Migration("20250505132432_Init")]
+    [Migration("20250506190905_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -24,7 +24,6 @@ namespace Web.Migrations
                 .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "hstore");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Web.Domain.Animal", b =>
@@ -32,6 +31,9 @@ namespace Web.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("NameKk")
                         .IsRequired()
@@ -44,26 +46,24 @@ namespace Web.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Animals");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            NameKk = "Қасқыр",
-                            NameRu = "Волк"
-                        },
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            NameKk = "Аю",
-                            NameRu = "Медведь"
-                        },
-                        new
-                        {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            NameKk = "Түлкі",
-                            NameRu = "Лиса"
-                        });
+            modelBuilder.Entity("Web.Domain.DictionaryEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DictionaryEntities");
                 });
 
             modelBuilder.Entity("Web.Domain.DictionarySettingsEntity", b =>
@@ -72,13 +72,19 @@ namespace Web.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Dictionary<string, string>>("AvailableProperties")
+                    b.PrimitiveCollection<List<Guid>>("AvailableDictionaries")
                         .IsRequired()
-                        .HasColumnType("hstore");
+                        .HasColumnType("uuid[]");
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<Guid>("DictionaryId")
                         .HasColumnType("uuid");
@@ -86,15 +92,20 @@ namespace Web.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.ToTable("DictionarySettings");
+                    b.HasIndex("DictionaryId");
+
+                    b.ToTable("DictionarySettingsEntities");
                 });
 
-            modelBuilder.Entity("Web.Domain.Permission", b =>
+            modelBuilder.Entity("Web.Domain.PermissionEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -103,8 +114,8 @@ namespace Web.Migrations
                     b.Property<Guid?>("DictionarySettingsEntityId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("DictionarySettingsId")
-                        .HasColumnType("uuid");
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -114,10 +125,21 @@ namespace Web.Migrations
 
                     b.HasIndex("DictionarySettingsEntityId");
 
-                    b.ToTable("Permissions");
+                    b.ToTable("PermissionEntities");
                 });
 
-            modelBuilder.Entity("Web.Domain.Permission", b =>
+            modelBuilder.Entity("Web.Domain.DictionarySettingsEntity", b =>
+                {
+                    b.HasOne("Web.Domain.DictionaryEntity", "Dictionary")
+                        .WithMany()
+                        .HasForeignKey("DictionaryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Dictionary");
+                });
+
+            modelBuilder.Entity("Web.Domain.PermissionEntity", b =>
                 {
                     b.HasOne("Web.Domain.DictionarySettingsEntity", null)
                         .WithMany("Permissions")
