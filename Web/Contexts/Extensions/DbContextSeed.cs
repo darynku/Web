@@ -8,43 +8,50 @@ public static class DbContextSeed
     public static async Task SeedAsync(this IApplicationBuilder app)
     {
         using var scope = app.ApplicationServices.CreateScope();
-
         var context = scope.ServiceProvider.GetRequiredService<WebDbContext>();
         
         if (await context.DictionaryEntities.AnyAsync()) return;
-
+        
         var permissions = new List<PermissionEntity>
         {
             new() { Id = Guid.NewGuid(), Name = "CanViewAnimal" },
             new() { Id = Guid.NewGuid(), Name = "CanEditAnimal" },
             new() { Id = Guid.NewGuid(), Name = "CanDeleteAnimal" }
         };
-       
-
-        var dictionary = new DictionaryEntity
+        
+        var dictionaries = new List<DictionaryEntity>
         {
-            Id = Guid.NewGuid(),
-            Title= "Animal"
+            new() { Id = Guid.NewGuid(), Title = "Animal" },
+            new() { Id = Guid.NewGuid(), Title = "Plant" },
+            new() { Id = Guid.NewGuid(), Title = "Vehicle" },
+            new() { Id = Guid.NewGuid(), Title = "Employee" },
+            new() { Id = Guid.NewGuid(), Title = "Product" }
         };
-
-        var setting = new DictionarySettingsEntity(
+        var availableDictionaries = dictionaries.Select(d => d.Id).ToList();
+        
+        var settings = dictionaries.Select(dictionary => new DictionarySettingsEntity(
+            Guid.NewGuid(), 
             dictionaryId: dictionary.Id,
-            code: "formAnimal",
-            description: "Форма для добавления животного",
+            code: $"{dictionary.Title}Form",
+            description: $"Форма для добавления {dictionary.Title.ToLower()}",
             startDate: DateTime.Parse("2025-05-01T00:00:00Z").ToUniversalTime(),
             endDate: DateTime.Parse("2025-12-31T23:59:59Z").ToUniversalTime(),
-            availableProperties: ["NameKk", "NameRu"],
+            availableDictionaries: availableDictionaries,
             permissions: permissions
-        )
+        )).ToList();
+
+        var animals = new List<Animal>()
         {
-            Dictionary = dictionary
+            new() { Id = Guid.NewGuid(), NameKk = "Қасқыр", NameRu = "Волк" },
+            new() { Id = Guid.NewGuid(), NameKk = "Аю", NameRu = "Медведь" },
+            new() { Id = Guid.NewGuid(), NameKk = "Түлкі", NameRu = "Лиса" }
         };
-
+        
         await context.PermissionEntities.AddRangeAsync(permissions);
-        await context.DictionaryEntities.AddAsync(dictionary);
-        await context.DictionarySettingsEntities.AddAsync(setting);
-
+        await context.DictionaryEntities.AddRangeAsync(dictionaries);
+        await context.DictionarySettingsEntities.AddRangeAsync(settings);
+        await context.Animals.AddRangeAsync(animals);
+        
         await context.SaveChangesAsync();
     }
-
 }
