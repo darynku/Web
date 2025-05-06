@@ -13,17 +13,13 @@ public static class DbContextSeed
         
         if (await context.DictionaryEntities.AnyAsync()) return;
 
-        var permission1 = new PermissionEntity
+        var permissions = new List<PermissionEntity>
         {
-            Id = Guid.NewGuid(),
-            Name = "CanViewAnimalForm"
+            new() { Id = Guid.NewGuid(), Name = "CanViewAnimal" },
+            new() { Id = Guid.NewGuid(), Name = "CanEditAnimal" },
+            new() { Id = Guid.NewGuid(), Name = "CanDeleteAnimal" }
         };
-
-        var permission2 = new PermissionEntity
-        {
-            Id = Guid.NewGuid(),
-            Name = "CanEditAnimalForm"
-        };
+       
 
         var dictionary = new DictionaryEntity
         {
@@ -38,13 +34,13 @@ public static class DbContextSeed
             startDate: DateTime.Parse("2025-05-01T00:00:00Z").ToUniversalTime(),
             endDate: DateTime.Parse("2025-12-31T23:59:59Z").ToUniversalTime(),
             availableProperties: ["NameKk", "NameRu"],
-            permissions: [permission1, permission2]
+            permissions: permissions
         )
         {
             Dictionary = dictionary
         };
 
-        await context.PermissionEntities.AddRangeAsync(permission1, permission2);
+        await context.PermissionEntities.AddRangeAsync(permissions);
         await context.DictionaryEntities.AddAsync(dictionary);
         await context.DictionarySettingsEntities.AddAsync(setting);
 

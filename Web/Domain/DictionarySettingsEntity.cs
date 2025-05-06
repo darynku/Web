@@ -1,16 +1,11 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Web.Domain.Abstract;
 
 namespace Web.Domain;
 
 public class DictionarySettingsEntity : BaseEntity
 {
-    public DictionarySettingsEntity() { }
-
     public DictionarySettingsEntity(
         Guid dictionaryId,
         string code,
@@ -47,5 +42,7 @@ public class DictionarySettingsEntity : BaseEntity
 
     public DateTime EndDate { get; set; }
 
+    //TODO AvailableProperties is array Guid ForeignKeys to dictionary 
+    // rename to AvailableDictionary
     public List<string> AvailableProperties { get; set; } = new(); // jsonb
 }

@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Web.Contexts;
@@ -11,10 +10,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddMemoryCache();
 
-builder.Services.AddDbContext<WebDbContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+builder.Services.AddDbContext<WebDbContext>(options => 
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
