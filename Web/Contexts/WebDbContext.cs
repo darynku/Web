@@ -6,6 +6,9 @@ namespace Web.Contexts;
 public class WebDbContext(DbContextOptions<WebDbContext> options) : DbContext(options)
 { 
     public DbSet<Animal> Animals { get; set; }
+    public DbSet<DictionarySettingsEntity> DictionarySettingsEntities { get; set; }
+    public DbSet<DictionaryEntity> DictionaryEntities { get; set; }
+    public DbSet<PermissionEntity> PermissionEntities { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

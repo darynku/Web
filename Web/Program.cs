@@ -2,13 +2,10 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Web.Contexts;
-using Web.Endpoints.Abstract;
+using Web.Contexts.Extensions;
+using Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
 
 builder.Services.AddOpenApi();
 
@@ -21,14 +18,18 @@ builder.Services.AddDbContext<WebDbContext>(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
 
-app.MapEndpoints();
+await app.AddMigrations();
+await app.SeedAsync();
+
 app.UseHttpsRedirection();
+
+app.AddAnimalEndpoints();
+app.AddDictionarySettingsEndpoints();
 
 app.Run();

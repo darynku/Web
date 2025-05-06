@@ -1,8 +1,9 @@
-﻿namespace Web.Domain;
+﻿using Web.Domain.Abstract;
 
-public class Animal
+namespace Web.Domain;
+
+public class Animal : BaseEntity
 {
-    public Guid Id { get; set; }
     public string NameKk { get; set; }
     public string NameRu { get; set; }
 }

@@ -3,41 +3,30 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Web.Contexts;
 using Web.Domain;
-using Web.Endpoints.Abstract;
 
 namespace Web.Endpoints;
 
-public class AnimalEndpoints : IEndpoint
+public static class AnimalEndpoints 
 {
-    public void MapEndpoint(IEndpointRouteBuilder app)
+    private const int CacheDuration = 5;
+    private const string CacheKey = "animals_dic";
+    public static void AddAnimalEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/animals", async (
+        app.MapGet("/api/dic/animals", async (
             [FromServices] WebDbContext context,
             [FromServices] IMemoryCache cache,
-            [FromQuery] string? nameKk,
-            [FromQuery] string? nameRu,
             CancellationToken cancellationToken) =>
         {
-            var cacheKey = $"animals:{nameKk}:{nameRu}";
-
-            if (cache.TryGetValue(cacheKey, out List<Animal>? cachedAnimals))
+            if (cache.TryGetValue(CacheKey, out List<Animal>? cachedAnimals))
             {
                 return Results.Ok(cachedAnimals);
             }
-            
-            var query = context.Animals.AsQueryable();
+            var animals = await context.Animals.ToListAsync(cancellationToken);
 
-            if (!string.IsNullOrWhiteSpace(nameKk))
-                query = query.Where(a => a.NameKk.Contains(nameKk));
-
-            if (!string.IsNullOrWhiteSpace(nameRu))
-                query = query.Where(a => a.NameRu.Contains(nameRu));
-
-            var animals = await query.ToListAsync(cancellationToken);
-            
-            cache.Set(cacheKey, animals, TimeSpan.FromMinutes(5));
+            cache.Set(CacheKey, animals, TimeSpan.FromMinutes(CacheDuration));
 
             return Results.Ok(animals);
-        });
+        }).WithName("GetAnimals")
+        .WithDisplayName("Get animals");
     }
 }
