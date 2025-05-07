@@ -13,7 +13,7 @@ using Web.Contexts;
 namespace Web.Migrations
 {
     [DbContext(typeof(WebDbContext))]
-    [Migration("20250506190905_Init")]
+    [Migration("20250507134900_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -97,6 +97,12 @@ namespace Web.Migrations
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("Id");
 

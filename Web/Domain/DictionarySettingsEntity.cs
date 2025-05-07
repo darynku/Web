@@ -46,6 +46,7 @@ public class DictionarySettingsEntity : BaseEntity
     //TODO AvailableProperties is array Guid ForeignKeys to dictionary 
     // rename to AvailableDictionary
     public List<Guid> AvailableDictionaries { get; set; }
-    // [Timestamp]
-    // public byte[] Version { get; set; }
+    
+    [Timestamp]
+    public uint Version { get; set; }
 }

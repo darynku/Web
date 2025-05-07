@@ -8,9 +8,10 @@ using Web.Domain;
 
 namespace Web.Endpoints;
 
+
 public static class DictionarySettingsEndpoint
 {
-    private const string EndpointGroupName = "DictionarySettings";
+    private const string PermissionForTest = "CanEditAnimal";
     private const string CacheKey = "availableProperties";
     private const int CacheDuration = 1;
 
@@ -23,20 +24,22 @@ public static class DictionarySettingsEndpoint
             [FromServices] IHttpContextAccessor httpContextAccessor,
             CancellationToken cancellationToken) =>
         {
-            var httpContext = httpContextAccessor.HttpContext;
+            // Пока нету токена, закоменчено для теста
             
-            if (httpContext == null)
-                return Results.Problem("HttpContext is not available.");
+            // var httpContext = httpContextAccessor.HttpContext;
+            //
+            // if (httpContext == null)
+            //     return Results.Problem("HttpContext is not available.");
             
             //IHttpContextAccessor httpContextAccessor jwt get permissions and check if available
-            var userPermissions = httpContext.User.Claims
-                .Where(c => c.Type == "permissions")
-                .Select(c => c.Value)
-                .Distinct()
-                .ToList();
-            
-            if (userPermissions.Count == 0)
-                return Results.Unauthorized();
+            // var userPermissions = httpContext.User.Claims
+            //     .Where(c => c.Type == "permissions")
+            //     .Select(c => c.Value)
+            //     .Distinct()
+            //     .ToList();
+            //
+            // if (userPermissions.Count == 0)
+            //     return Results.Unauthorized();
 
             if (cache.TryGetValue(CacheKey, out var cachedData))
             {
@@ -50,7 +53,7 @@ public static class DictionarySettingsEndpoint
                 .Where(x =>
                     x.StartDate <= now &&
                     x.EndDate >= now &&
-                    x.Permissions.Any(p => p.Name == "CanEditAnimal"))
+                    x.Permissions.Any(p => p.Name == PermissionForTest))
                 .Select(x => new
                 {
                     x.AvailableDictionaries,
@@ -68,6 +71,6 @@ public static class DictionarySettingsEndpoint
             return Results.Ok(data);
 
             //TODO super check if in DB changed (Delta nuget package)
-        }); /*.UseDelta<WebDbContext>();*/ //local timestamp exception
+        }).UseDelta<WebDbContext>(); 
     }
 }
