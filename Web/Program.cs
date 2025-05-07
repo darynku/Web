@@ -28,6 +28,7 @@ await app.SeedAsync();
 
 app.UseHttpsRedirection();
 
+Console.WriteLine(Guid.NewGuid());
 app.AddAnimalEndpoints();
 app.AddDictionarySettingsEndpoints();
 app.Run();
