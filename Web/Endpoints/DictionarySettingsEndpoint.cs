@@ -1,14 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Delta;
+﻿using Delta;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Web.Contexts;
-using Web.Domain;
 
 namespace Web.Endpoints;
-
-
 public static class DictionarySettingsEndpoint
 {
     private const string PermissionForTest = "CanEditAnimal";
@@ -51,24 +47,38 @@ public static class DictionarySettingsEndpoint
             //TODO check permissions is available
             var data = await context.DictionarySettingsEntities
                 .Where(x =>
+                    x.Id == id &&
                     x.StartDate <= now &&
                     x.EndDate >= now &&
                     x.Permissions.Any(p => p.Name == PermissionForTest))
-                .Select(x => new
+                .Select(x => new 
                 {
                     x.AvailableDictionaries,
                     x.Permissions
-                })
-                .FirstOrDefaultAsync(cancellationToken);
+                }).FirstOrDefaultAsync(cancellationToken);
 
-            //TODO reflection or something else to get properties from aviableProperties
             if (data == null)
                 return Results.Forbid();
-
+            
+            //TODO something to get properties from availableProperties
+            var availableProperties = await context.DictionaryEntities
+                .Where(d => data.AvailableDictionaries.Contains(d.Id))
+                .Select(d => new
+                {
+                    d.Id,
+                    d.Title
+                }).ToListAsync(cancellationToken);
+            
+            var result = new
+            {
+                AvailableDictionaries = availableProperties,
+                Permissions = data.Permissions.Select(p => p.Name).ToList()
+            };
+            
             //TODO cache for hour
             cache.Set(CacheKey, data, TimeSpan.FromHours(CacheDuration));
 
-            return Results.Ok(data);
+            return Results.Ok(new { data, result });
 
             //TODO super check if in DB changed (Delta nuget package)
         }).UseDelta<WebDbContext>(); 
