@@ -55,6 +55,7 @@ public static class DbContextSeed
                 Username = "admin",
                 PasswordHash = "admin", 
                 Email = "admin",
+                Role = Role.Admin,
                 Permissions =
                 [
                     permissions.First(p => p.Name == "CanEditAnimal"), 
@@ -67,6 +68,7 @@ public static class DbContextSeed
                 Username = "string",
                 PasswordHash = "string",
                 Email = "string",
+                Role = Role.User,
                 Permissions = [permissions.First(p => p.Name == "CanViewAnimal")]
             }
         };

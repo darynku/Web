@@ -11,7 +11,7 @@ public static class UserEndpoints
 {
     public static IEndpointRouteBuilder AddUserEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("login/string", async (
+        app.MapPost("api/login/string", async (
             [FromBody] TestUserLoginRequest request,
             [FromServices] WebDbContext dbContext,
             [FromServices] IJwtService jwtService,
@@ -31,7 +31,7 @@ public static class UserEndpoints
             return Results.Ok(new { token });
         });
 
-        app.MapPost("login/admin", async (
+        app.MapPost("api/login/admin", async (
             [FromBody] TestAdminLoginRequest request,
             [FromServices] WebDbContext dbContext,
             [FromServices] IJwtService jwtService,

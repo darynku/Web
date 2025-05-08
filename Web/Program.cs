@@ -38,6 +38,7 @@ Console.WriteLine(Guid.NewGuid());
 
 app.AddAnimalEndpoints()
     .AddDictionarySettingsEndpoints()
-    .AddUserEndpoints();
+    .AddUserEndpoints()
+    .AddDictionaryEndpoint();
 
 app.Run();
