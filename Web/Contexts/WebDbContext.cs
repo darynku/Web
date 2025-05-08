@@ -10,7 +10,7 @@ public class WebDbContext(DbContextOptions<WebDbContext> options) : DbContext(op
     public DbSet<DictionarySettingsEntity> DictionarySettingsEntities { get; set; }
     public DbSet<DictionaryEntity> DictionaryEntities { get; set; }
     public DbSet<PermissionEntity> PermissionEntities { get; set; }
-
+    public DbSet<UserEntity> Users { get; set; }
     // protected override void OnModelCreating(ModelBuilder modelBuilder)
     // {
     //     modelBuilder.Entity<DictionarySettingsEntity>()

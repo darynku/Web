@@ -1,6 +1,7 @@
 using Delta;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using Web;
 using Web.Contexts;
 using Web.Contexts.Extensions;
 using Web.Endpoints;
@@ -10,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddMemoryCache();
+
+builder.AddJwtAuth();
 
 builder.Services.AddDbContext<WebDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -26,9 +29,15 @@ if (app.Environment.IsDevelopment())
 await app.AddMigrations();
 await app.SeedAsync();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseHttpsRedirection();
 
 Console.WriteLine(Guid.NewGuid());
-app.AddAnimalEndpoints();
-app.AddDictionarySettingsEndpoints();
+
+app.AddAnimalEndpoints()
+    .AddDictionarySettingsEndpoints()
+    .AddUserEndpoints();
+
 app.Run();

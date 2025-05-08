@@ -10,6 +10,7 @@ public static class DbContextSeed
         using var scope = app.ApplicationServices.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<WebDbContext>();
         
+        
         if (await context.DictionaryEntities.AnyAsync()) return;
         
         var permissions = new List<PermissionEntity>
@@ -46,11 +47,35 @@ public static class DbContextSeed
             new() { Id = Guid.NewGuid(), NameKk = "Аю", NameRu = "Медведь" },
             new() { Id = Guid.NewGuid(), NameKk = "Түлкі", NameRu = "Лиса" }
         };
+
+        var users = new List<UserEntity>
+        {
+            new() {
+                Id = Guid.NewGuid(),
+                Username = "admin",
+                PasswordHash = "admin", 
+                Email = "admin",
+                Permissions =
+                [
+                    permissions.First(p => p.Name == "CanEditAnimal"), 
+                    permissions.First(p => p.Name == "CanViewAnimal"),
+                    permissions.First(p => p.Name == "CanDeleteAnimal")
+                ]
+            },
+            new() {
+                Id = Guid.NewGuid(),
+                Username = "string",
+                PasswordHash = "string",
+                Email = "string",
+                Permissions = [permissions.First(p => p.Name == "CanViewAnimal")]
+            }
+        };
         
         await context.PermissionEntities.AddRangeAsync(permissions);
         await context.DictionaryEntities.AddRangeAsync(dictionaries);
         await context.DictionarySettingsEntities.AddRangeAsync(settings);
         await context.Animals.AddRangeAsync(animals);
+        await context.Users.AddRangeAsync(users); 
         
         await context.SaveChangesAsync();
     }

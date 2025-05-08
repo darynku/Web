@@ -10,7 +10,7 @@ public static class AnimalEndpoints
 {
     private const int CacheDuration = 5;
     private const string CacheKey = "animals_dic";
-    public static void AddAnimalEndpoints(this IEndpointRouteBuilder app)
+    public static IEndpointRouteBuilder AddAnimalEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/api/dic/animals", async (
             [FromServices] WebDbContext context,
@@ -28,5 +28,7 @@ public static class AnimalEndpoints
             return Results.Ok(animals);
         }).WithName("GetAnimals")
         .WithDisplayName("Get animals");
+
+        return app;
     }
 }
