@@ -1,25 +1,24 @@
-﻿using Delta;
+﻿using System.Text.Json;
+using Delta;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using Web.Constants;
 using Web.Contexts;
-using Web.Services;
+using Web.Endpoints.Requests;
 
 namespace Web.Endpoints;
 public static class DictionarySettingsEndpoint
 {
-    private const string PermissionForTest = "CanEditAnimal";
     private const string CacheKey = "availableProperties";
     private const int CacheDuration = 1;
 
     public static IEndpointRouteBuilder AddDictionarySettingsEndpoints(this IEndpointRouteBuilder app)
     {
-        //{id:guid}
-        app.MapGet("api/dic/availableProperties", async (
+        app.MapGet("api/dic/availableProperties/{id:guid}", async (
             [FromServices] WebDbContext context,
-            [FromServices] IMemoryCache cache,
-            // [FromRoute] Guid id,
+            [FromServices] IDistributedCache cache,
+            [FromRoute] Guid id,
             [FromServices] IHttpContextAccessor httpContextAccessor,
             CancellationToken cancellationToken) =>
         {
@@ -27,8 +26,7 @@ public static class DictionarySettingsEndpoint
             
              if (httpContext == null)
                  return Results.Problem("HttpContext is not available.");
-            
-             // IHttpContextAccessor httpContextAccessor jwt get permissions and check if available
+             
              var userPermissions = httpContext.User.Claims
                  .Where(c => c.Type == AuthConstants.Permissions)
                  .Select(c => c.Value)
@@ -37,54 +35,56 @@ public static class DictionarySettingsEndpoint
              if (userPermissions.Count == 0)
                  return Results.Unauthorized();
 
-             if (cache.TryGetValue(CacheKey, out var cachedData))
+             var cachedJson = await cache.GetStringAsync(CacheKey, cancellationToken);
+             if (cachedJson is not null)
              {
+                 var cachedData = JsonSerializer.Deserialize<DictionaryResultDto>(cachedJson);
                  return Results.Ok(cachedData);
              }
 
              var now = DateTime.UtcNow;
-
-             //TODO check permissions is available
              
              var data = await context.DictionarySettingsEntities
                  .Where(x =>
-                     //TODO если для теста комментарий x.Id == id &&
+                     x.Id == id &&
                      x.StartDate <= now &&
                      x.EndDate >= now &&
                      x.Permissions.Any(p => userPermissions.Contains(p.Name)))
-                 .Select(x => new 
+                 .Select(x => new DictionarySettingsDto
                  {
-                     x.AvailableDictionaries,
-                     x.Permissions
-                 }).FirstOrDefaultAsync(cancellationToken);
-
+                     AvailableDictionaries = x.AvailableDictionaries,
+                     Permissions = x.Permissions
+                 })
+                 .FirstOrDefaultAsync(cancellationToken);
+             
              if (data == null)
                  return Results.Forbid();
-            
-             //TODO something to get properties from availableProperties
              
              var availableProperties = await context.DictionaryEntities
                  .Where(d => data.AvailableDictionaries.Contains(d.Id))
-                 .Select(d => new
+                 .Select(d => new DictionaryEntityDto
                  {
-                     d.Id,
-                     d.Title
-                 }).ToListAsync(cancellationToken);
-            
-             var result = new
+                     Id = d.Id,
+                     Title = d.Title
+                 })
+                 .ToListAsync(cancellationToken);
+
+             var result = new DictionaryResultDto
              {
                  AvailableDictionaries = availableProperties,
                  Permissions = data.Permissions.Select(p => p.Name).ToList()
              };
-            
-             //TODO cache for hour
-             cache.Set(CacheKey, data, TimeSpan.FromHours(CacheDuration));
+             
+             //cache for hour
+             await cache.SetStringAsync(CacheKey, JsonSerializer.Serialize(result),
+                 new DistributedCacheEntryOptions
+                 {
+                     AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(CacheDuration)
+                 }, cancellationToken);
 
-             return Results.Ok(new { data, result });
-
-             //TODO super check if in DB changed (Delta nuget package)
+             return Results.Ok(result);
+             //super check if in DB changed (Delta nuget package)
         }).UseDelta<WebDbContext>();
-
         return app;
     }
 }

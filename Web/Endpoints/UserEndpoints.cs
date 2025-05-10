@@ -32,7 +32,7 @@ public static class UserEndpoints
         });
 
         app.MapPost("api/login/admin", async (
-            [FromBody] TestAdminLoginRequest request,
+            [FromBody] TestRequests request,
             [FromServices] WebDbContext dbContext,
             [FromServices] IJwtService jwtService,
             [FromServices] IHttpContextAccessor httpContextAccessor) =>

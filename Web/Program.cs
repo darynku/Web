@@ -17,13 +17,18 @@ builder.AddJwtAuth();
 builder.Services.AddDbContext<WebDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsEnvironment("Docker"))
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference().AllowAnonymous();
 }
 
 await app.AddMigrations();
@@ -32,13 +37,11 @@ await app.SeedAsync();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseHttpsRedirection();
-
-Console.WriteLine(Guid.NewGuid());
 
 app.AddAnimalEndpoints()
     .AddDictionarySettingsEndpoints()
     .AddUserEndpoints()
     .AddDictionaryEndpoint();
 
+app.UseHttpsRedirection();
 app.Run();

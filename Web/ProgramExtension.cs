@@ -38,12 +38,12 @@ public static class ProgramExtension
                         }
                         return Task.CompletedTask;
                     },
-                    OnAuthenticationFailed = context =>
-                    {
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        context.Response.ContentType = "application/json";
-                        return Task.CompletedTask;
-                    },
+                    // OnAuthenticationFailed = context =>
+                    // {
+                    //     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    //     context.Response.ContentType = "application/json";
+                    //     return Task.CompletedTask;
+                    // },
                     OnForbidden = context =>
                     {
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
